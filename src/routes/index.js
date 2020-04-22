@@ -1,58 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path')
-const pool = require('../database');
+const passport = require('passport')
 
+//Ruta de register per guardar usuari
 
-//Ruta de registre per enmagatzemar dades a la bdd
-
-router.post('/register', async (req, res, next) => {
-  console.log(req.body);
-  const { emailUser, passwordUser, nomUser } = req.body;
-
-  const emailUserWith = "'" + emailUser + "'"
-  const passUserWith = "'" + passwordUser + "'"
-  const nomUserWith = "'" + nomUser + "'"
-  
-  await pool.query('INSERT INTO dades_user (emailUser, passwordUser, nomUser) VALUES ('+emailUserWith+','+passUserWith+','+nomUserWith+');', (err, res) => {
-    if(err){
-      console.log(err.stack)
-    }
-    else {
-      console.log(res.rows[0])
-    }
-  });
-  res.send('recieved')
-  next();
-
-})
-
-
+router.post('/register', passport.authenticate('local.signup', {
+  successRedirect: 'http://localhost:3000/Help',
+  failureRedirect: 'http://localhost:3000/Reg',
+}))
 
 
 
 //Ruta de login per validar la autentificació de l'usuari
 
-router.post('/login', async (req, res) => {
-  console.log(req.body);
-  const { emailUser, passwordUser } = req.body;
-  const newLink = {
-    emailUser,
-    passwordUser,
-
-  };
-
-
-})
+router.post('/login', passport.authenticate('local.signin', {
+    successRedirect: 'http://localhost:3000/',
+    failureRedirect: 'http://localhost:3000/Reg',
+  }))
 
 router.get('/api', (req, res, next) =>{
   res.sendFile('index.html', { root: path.join(__dirname, '../public') });
   
 })
-
-
-
-
 
 
 module.exports = router;
