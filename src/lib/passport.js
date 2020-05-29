@@ -4,6 +4,7 @@ const pool = require('../database')
 const helpers = require('../lib/helpers')
 
 let definitiveId;
+let definitiveIdReg;
 
 passport.use('local.signin', new LocalStrategy({
     usernameField: 'email',
@@ -45,11 +46,16 @@ passport.use('local.signup', new LocalStrategy({
     passwordField: 'passwordUser',
     passReqToCallback: true
 }, async (req, emailUser, passwordUser, done) => {
-    const { nomUser } = req.body
+    const { nomUser, day, month, year, tlf } = req.body
+    let telfUser = parseInt(tlf)
+    let birthdayUser = year + "-" + month + "-" + day
+    console.log('Data: '+ birthdayUser)
     const newUser = {
         emailUser,
         passwordUser,
-        nomUser
+        nomUser,
+        birthdayUser,
+        telfUser
     };
     newUser.passwordUser = await helpers.encryptPassword(passwordUser)
     await pool.query('INSERT INTO dades_user SET ?', [newUser], (err, res) => {
@@ -64,10 +70,10 @@ passport.use('local.signup', new LocalStrategy({
             console.log(err)
         } else {
             console.log('Id de lusuari inserit en la bdd juntament amb email')
-            definitiveId = res.insertId
+            definitiveIdReg = res.insertId
+            return done(null, res.insertId);
         }
     })
-    return done(null, definitiveId);
 
 }));
 
@@ -77,7 +83,6 @@ passport.serializeUser((usr, done) => {
 })
 
 passport.deserializeUser( async (id, done) => {
-    console.log('Deserialized')
     await pool.query('SELECT * FROM usuari INNER JOIN dades_user ON usuari.emailUser = dades_user.emailUser WHERE idUser = ?', [id], (err, res) => {
         if (err){
             console.log('Unable to deserialize')
