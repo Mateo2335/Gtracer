@@ -120,7 +120,7 @@ app.post('/postimage', async (req, res)=>{
 
         console.log( rutaImatge, titolPost)
 
-        await pool.query('UPDATE image SET (rutaImatge) VALUES (?)', [rutaImatge], (err, resp) =>{
+        await pool.query('INSERT INTO image(rutaImatge) VALUES (?)', [rutaImatge], (err, resp) =>{
             if (err) {
                 console.log(err)
             } else{
